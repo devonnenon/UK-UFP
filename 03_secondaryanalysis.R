@@ -94,7 +94,7 @@ for(i in 1:length(locations)){
   cbtemp <- eval(cbtemp_ex)
   
   # Define spline for ufp (new)
-  splufp <- onebasis(data$ufp, "ns", df = dfsplufp)
+  splufp <- eval(splufp_ex)
   
   outcomes <- c("nonext", "cvd", "resp")
   outcomemodels <- lapply(outcomes, function(outcome) {
@@ -106,7 +106,7 @@ for(i in 1:length(locations)){
     modspl <- update(modmain, . ~ . - ufp01 + splufp)
     
     # PREDICT ESTIMATE FOR A 10,000-UNIT INCREASE
-    cpspl <- crosspred(splufp, modspl, cen=0)
+    cpspl <- crosspred(splufp, modspl, cen=0, at = unitinc)
     
     nonlin <- list(
       modspl = modspl,

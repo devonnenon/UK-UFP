@@ -85,6 +85,7 @@ lagufp <- 5
 
 # Define spline for UFP for nonlinear E-R (secondary analysis)
 dfsplufp <- 3
+splufp_ex <- expression(onebasis(data$ufp, "ns", df = dfsplufp))
 
 
 #---------------
