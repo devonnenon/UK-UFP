@@ -20,3 +20,4 @@ library(dlnm)
 library(splines)
 library(tsModel)
 
+library(mixmeta)

@@ -68,16 +68,29 @@ dlist <- lapply(dlist, function(data){
 
 # Spline of time
 dfspltime <- 7 # per year
-spltime <- expression(ns(data$date, df=round(dfspltime*nrow(data)/365.25)))
+spltime_ex <- expression(ns(data$date, df=round(dfspltime*nrow(data)/365.25)))
 
-# Extended lag for UFP
-lagufp <- 5
-
-dfsplufp <- 3
-
-# 
+# Define the unit increase used to calculate effect estimates
 unitinc <- 10000
 
+# Define mortality outcomes included in the analysis 
+outcomes <- c("nonext", "cvd", "resp")
+
+# Define crossbasis for temperature
+ktemp <- expression(quantile(data$tmean, c(10, 75, 90)/100, na.rm = T))
+cbtemp_ex <- expression(crossbasis(data$tmean, lag = 3, argvar = list(fun = "ns", 
+                    knots = eval(ktemp)), arglag = list(fun = "strata", breaks = 1)))
+# Define how many days for extended lag (secondary analysis)
+lagufp <- 5
+
+# Define spline for UFP for nonlinear E-R (secondary analysis)
+dfsplufp <- 3
+
+
+#---------------
+# Remove unneeded objects
+#---------------
+rm(combinedata, holidays, mortenv)
 
 
 
