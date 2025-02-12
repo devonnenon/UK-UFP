@@ -25,12 +25,18 @@ mainlist[["wmid_pool"]] <- lapply(outcomes, function(outcome){
     meta <- mixmeta(coefs ~ 1, variances, method = "fixed")
     
     # Predict change for 10,000 unit increase of UFP
-    preds <- exp(predict(meta, ci = T, newdata = data.frame(inc = unitinc)))
+    est <- as.data.frame(t(exp(predict(meta, ci = T, newdata = data.frame(inc = unitinc)))))
+    colnames(est) <- c("est", "lower", "upper")
     
     # Calculate as % change
-    perc <- (preds - 1)*100
+    perc <- (est - 1)*100
     
-    results <- list(metamodel = meta, est = preds, perc = perc)
+    results <- list(
+      modmain = meta,
+      estRR = est,
+      estperc = perc,
+      outcome = outcome
+    )
     return(results)
   }) ; names(mainlist[["wmid_pool"]]) <- outcomes
 
@@ -81,8 +87,8 @@ extlaglist[["wmid_pool"]] <- lapply(outcomes, function(outcome){
   # Table in % change format
   tablagperc <- (tablag - 1)*100
   
-  results <- list(metamodel = meta, est = lagsest, tabest = tablag, 
-                  perc = lagspercchange, tabperc = tablagperc)
+  results <- list(modlag = meta, estRR = lagsest, tabRR = tablag, 
+                  estperc = lagspercchange, tabperc = tablagperc)
   return(results)
 }) ; names(extlaglist[["wmid_pool"]]) <- outcomes
 
@@ -97,14 +103,29 @@ nonlinlist[["wmid_pool"]] <- lapply(outcomes, function(outcome){
     return(coefs)
   })))
   
+  coefslin <- drop(t(sapply(birmsites, function(site) {
+    allcoefs <- nonlinlist[[site]][[outcome]][["modlin"]][["coefficients"]]
+    linufpind <- grep("linufp", names(allcoefs))
+    coefs <- allcoefs[linufpind]
+    return(coefs)
+  })))
+  
   variances <- lapply(birmsites, function(site) {
     allcoefs <- nonlinlist[[site]][[outcome]][["modspl"]][["coefficients"]]
     splufpind <- grep("splufp", names(allcoefs))
     v <- vcov(nonlinlist[[site]][[outcome]][["modspl"]])[splufpind, splufpind]
   })
   
+  varianceslin <- lapply(birmsites, function(site) {
+    allcoefs <- nonlinlist[[site]][[outcome]][["modlin"]][["coefficients"]]
+    linufpind <- grep("linufp", names(allcoefs))
+    v <- vcov(nonlinlist[[site]][[outcome]][["modlin"]])[linufpind, linufpind]
+  })
+  
   # Standard meta analysis with fixed effects
   meta <- mixmeta(coefs ~ 1, variances, method = "fixed")
+  
+  metalin <- mixmeta(coefslin ~ 1, varianceslin, method = "fixed")
   
   # Get full UFP distribution in W. Midlands
   data <- rbind(dlist[["birmcen"]], dlist[["birmtyb"]])
@@ -112,10 +133,20 @@ nonlinlist[["wmid_pool"]] <- lapply(outcomes, function(outcome){
   # Define spline for prediction
   splufp <- eval(splufp_ex)
   
+  linufp <- onebasis(data$ufp01, fun = "lin")
+  
   # Predict 
   cpspl <- crosspred(splufp, coef = coef(meta), vcov = vcov(meta),
-                     model.link = "log", cen = 0)
-
-  results <- list(metamodel = meta, est = cpspl)
+                     model.link = "log", cen = 0, at = preds)
+  
+  cplin <- crosspred(linufp, coef = coef(metalin), vcov = vcov(metalin),
+                     model.link = "log", cen = 0, at = preds)
+  
+  # Store results
+  results <- list(modspl = meta, cpspl = cpspl, modlin = metalin, cplin = cplin)
   return(results)
 }) ; names(nonlinlist[["wmid_pool"]]) <- outcomes
+
+# Save results
+#save(dlist, extlaglist, intlist, mainlist, nonlinlist, ufp, file = "results_figures/results.RData")
+

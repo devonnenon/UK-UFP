@@ -10,7 +10,6 @@
 locations <- names(dlist)
 
 # Initialize empty lists
-secondarylist <- list()
 extlaglist <- list()
 nonlinlist <- list()
 intlist <- list()
@@ -19,7 +18,7 @@ intlist <- list()
 # Extended lags 
 # -------------
 # Loop on the different locations
-for(i in 1:length(locations)){
+for(i in 1:length(locations)){ #for loop - lapply not working for some reason
   print(i)
   location <- locations[[i]]
   data <- dlist[[location]]
@@ -96,6 +95,9 @@ for(i in 1:length(locations)){
   # Define spline for ufp (new)
   splufp <- eval(splufp_ex)
   
+  # Define linear function for later plotting
+  linufp <- onebasis(data$ufp01, fun = "lin")
+  
   outcomes <- c("nonext", "cvd", "resp")
   outcomemodels <- lapply(outcomes, function(outcome) {
     #outcome <- "nonext"
@@ -106,11 +108,19 @@ for(i in 1:length(locations)){
     modspl <- update(modmain, . ~ . - ufp01 + splufp)
     
     # PREDICT ESTIMATE FOR A 10,000-UNIT INCREASE
-    cpspl <- crosspred(splufp, modspl, cen=0, at = unitinc)
+    cpspl <- crosspred(splufp, modspl, cen=0, at = preds)
+    
+    # Linear model for later plotting
+    modlin <- update(modmain, . ~ . - ufp01 + linufp)
+    
+    cplin <- crosspred(linufp, modlin, cen = 0, at = preds)
     
     nonlin <- list(
+      splufp = splufp,
       modspl = modspl,
-      cpspl = cpspl
+      cpspl = cpspl,
+      modlin = modlin,
+      cplin = cplin
     )
     
     return(nonlin)

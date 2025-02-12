@@ -104,6 +104,13 @@ ufp <- ufp %>%
   mutate(london = ifelse(london < 1, NA, london)) %>%
   mutate(wmid = ifelse(wmid < 1, NA, wmid))
 
+# For sensitivity analysis: trim top and bottom 5% 
+#ufp <- ufp %>%
+#  mutate(london = ifelse(london <= quantile(london, 0.05, na.rm=T), NA, london)) %>%
+#  mutate(wmid = ifelse(wmid <= quantile(wmid, 0.05, na.rm=T), NA, wmid)) %>%
+#  mutate(london = ifelse(london >= quantile(london, 0.95, na.rm=T), NA, london)) %>%
+#  mutate(wmid = ifelse(wmid >= quantile(wmid, 0.95, na.rm=T), NA, wmid))
+
 # Aggregate to daily, requiring 75% of complete measurements per day
 ufp_agg <- timeAverage(ufp, avg.time = "day", data.thresh = 75)
 
@@ -128,8 +135,9 @@ ufp_agg_long <- ufp_agg %>%
 
   
 # Save data
-write.csv(ufp_agg_long, file = "UFPdata/UFP_cleaned.csv", row.names = F)
+#write.csv(ufp_agg_long, file = "UFPdata/UFP_cleaned.csv", row.names = F)
 
+#write.csv(ufp_agg_long, file = "UFPdata/UFP_trimmed.csv", row.names = F)
 ###############################
 
 #ufp_agg_wide <- ufp_agg_long %>%

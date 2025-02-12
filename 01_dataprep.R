@@ -85,13 +85,24 @@ lagufp <- 5
 
 # Define spline for UFP for nonlinear E-R (secondary analysis)
 dfsplufp <- 3
-splufp_ex <- expression(onebasis(data$ufp, "ns", df = dfsplufp))
+#splufp_ex <- expression(onebasis(data$ufp, "ns", df = dfsplufp))
+splufp_ex <- expression(onebasis(data$ufp, "ns", knots = quantile(data$ufp, 0.5, na.rm=T)))
+
+# Pred values for nonlinear predictions
+preds <- seq(0, 50000, length = 30)
 
 
 #---------------
 # Remove unneeded objects
 #---------------
 rm(combinedata, holidays, mortenv)
+
+# Import QAIC function
+QAIC <- function(model) {
+  phi <- summary(model)$dispersion
+  loglik <- sum(dpois(model$y, model$fitted.values, log=TRUE))
+  return(-2*loglik + 2*summary(model)$df[3]*phi)
+}
 
 
 
