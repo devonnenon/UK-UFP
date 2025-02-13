@@ -148,5 +148,5 @@ nonlinlist[["wmid_pool"]] <- lapply(outcomes, function(outcome){
 }) ; names(nonlinlist[["wmid_pool"]]) <- outcomes
 
 # Save results
-#save(dlist, extlaglist, intlist, mainlist, nonlinlist, ufp, file = "results_figures/results.RData")
+save(dlist, extlaglist, intlist, mainlist, nonlinlist, ufp, file = "results_figures/results.RData")
 

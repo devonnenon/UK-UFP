@@ -85,8 +85,8 @@ lagufp <- 5
 
 # Define spline for UFP for nonlinear E-R (secondary analysis)
 dfsplufp <- 3
-#splufp_ex <- expression(onebasis(data$ufp, "ns", df = dfsplufp))
-splufp_ex <- expression(onebasis(data$ufp, "ns", knots = quantile(data$ufp, 0.5, na.rm=T)))
+kufp <- quantile(ufp$ufp, 0.5, na.rm=T)
+splufp_ex <- expression(onebasis(data$ufp, "ns", knots = kufp))
 
 # Pred values for nonlinear predictions
 preds <- seq(0, 50000, length = 30)

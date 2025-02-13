@@ -2,7 +2,7 @@
 # UFP/mortality project
 
 
-# Plots
+# Plots: results
 
 ################################################################################
 library(ggplot2)
@@ -52,7 +52,6 @@ ggplot(data = nonlinplotdf, aes(x = pred)) +
   geom_ribbon(aes(ymax = upperlin, ymin = lowerlin), alpha = 0.2, fill = "grey70")+
   theme_bw() +
   scale_x_continuous(limits = c(0, 50000), n.breaks = 3) +
- # coord_cartesian(ylim = c(0.85, 1.25))+
   theme(panel.grid = element_line(linetype = 3)) +
   labs(y = "RR", x = PNClab) +
   theme(strip.background = element_blank(), strip.placement = "outside") +
@@ -169,9 +168,10 @@ intplotdf <- do.call(rbind, lapply(intlocs, function(location){
 
 intplotdf %>%
   ggplot(aes(x = when))+
-  geom_hline(yintercept = 0, color = "grey", linetype = 3)+
+  geom_hline(yintercept = 0, color = "grey", linetype = 2)+
   geom_point(aes(y=est))+
   geom_errorbar(aes(ymin = est_cilow, ymax = est_cihigh), linewidth = 0.5, width = 0.25) + 
+  theme_bw()+
   theme(strip.background = element_blank(), strip.placement = "outside") +
   facet_grid(location ~ outcome, 
              switch = "y", 
