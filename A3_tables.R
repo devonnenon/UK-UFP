@@ -11,11 +11,23 @@ locationnames <- c("London", "WestMidlands")
 names(locationsplot) <- locationnames
 outcomes <- c("nonext", "cvd", "resp")
 
+# ----------------
+# Main results
+# ----------------
+tabmain <- do.call(rbind, lapply(locationsplot, function(location){
+  outcomeres <- do.call(rbind, lapply(outcomes, function(outcome){
+    est <- signif(mainlist[[location]][[outcome]][["estperc"]], 4)
+    return(paste0(est[1]," (", est[2], " to ", est[3], ")"))
+  }))
+  rownames(outcomeres) <- paste(outcomes, location) 
+  return(outcomeres)
+}))
+tabmain
 
 # ----------------
 # Extended lags
 # ----------------
-tabextlag <- table2df <- do.call(rbind, lapply(locationsplot, function(location){
+tabextlag <- do.call(rbind, lapply(locationsplot, function(location){
   outcomes_res <- do.call(rbind, lapply(outcomes, function(outcome){
     cumulest <- signif(extlaglist[[location]][[outcome]][["estperc"]][,1], 3)
     cumullb <- signif(extlaglist[[location]][[outcome]][["estperc"]][,2], 3)

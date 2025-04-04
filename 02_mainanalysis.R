@@ -9,6 +9,7 @@
 # Loop through the measurement sites
 mainlist <- lapply(names(dlist), function(location){
   
+  # Extract data for each site
   data <- dlist[[location]]
 
   # Define spline of time
@@ -20,6 +21,7 @@ mainlist <- lapply(names(dlist), function(location){
   # Loop on the outcomes
   causes_results <- lapply(outcomes, function(outcome){
     
+    # Extract mortality data for the outcome
     mortality <- data[[outcome]]
 
     # Run main model
@@ -45,4 +47,37 @@ mainlist <- lapply(names(dlist), function(location){
   names(causes_results) <- outcomes
   return(causes_results)
 }) ; names(mainlist) <- names(dlist)
+
+# -------------
+# Pool West Midlands sites
+# -------------
+
+mainlist[["wmid_pool"]] <- lapply(outcomes, function(outcome){
+  
+  # Extract coefficients and variances from west midlands models 
+  coefs <- unlist(lapply(birmsites, function(site) 
+    mainlist[[site]][[outcome]][["modmain"]][["coefficients"]][["ufp01"]]))
+  
+  variances <- unlist(lapply(birmsites, function(site) 
+    summary(mainlist[[site]][[outcome]][["modmain"]])$coefficients["ufp01",2]))
+  
+  # Standard meta analysis with fixed effects
+  meta <- mixmeta(coefs ~ 1, variances, method = "fixed")
+  
+  # Predict change for 10,000 unit increase of UFP
+  est <- as.data.frame(t(exp(predict(meta, ci = T, newdata = data.frame(inc = unitinc)))))
+  colnames(est) <- c("est", "lower", "upper")
+  
+  # Calculate as % change
+  perc <- (est - 1)*100
+  
+  results <- list(
+    modmain = meta,
+    estRR = est,
+    estperc = perc,
+    outcome = outcome
+  )
+  return(results)
+}) ; names(mainlist[["wmid_pool"]]) <- outcomes
+
 

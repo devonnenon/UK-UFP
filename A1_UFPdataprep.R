@@ -137,10 +137,4 @@ ufp_agg_long <- ufp_agg %>%
 # Save data
 #write.csv(ufp_agg_long, file = "UFPdata/UFP_cleaned.csv", row.names = F)
 
-#write.csv(ufp_agg_long, file = "UFPdata/UFP_trimmed.csv", row.names = F)
-###############################
-
-#ufp_agg_wide <- ufp_agg_long %>%
-#  pivot_wider(names_from = c(area, site), values_from = value)
-
 
