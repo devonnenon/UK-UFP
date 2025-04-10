@@ -20,20 +20,21 @@ for(i in 1:length(locations)){ #for loop - lapply not working for some reason
   
   # Redefine parameters from main model
   # Define spline of time
-  spltime <- eval(spltime_ex)
-  
-  # Define temperature crossbasis
-  cbtemp <- eval(cbtemp_ex)
+  spltime_param <- list(data$date, df=round(dfspltime*nrow(data)/365.25))
+  spltime <- do.call(spltimefun, spltime_param)
   
   # Define cross basis for ufp (new)
-  cbufp <- crossbasis(data$ufp, lag = lagufp, argvar = list(fun = "lin"),
-                      arglag=list(fun = "integer"))
+  cbufp <- crossbasis(data$ufp, lag = lagufp, argvar = argvarufp,
+                      arglag= arglagufp)
   
   outcomes <- c("nonext", "cvd", "resp")
   outcomemodels <- lapply(outcomes, function(outcome) {
     #outcome <- "nonext"
     # Pull previous model for this location and outcome
     modmain <- mainlist[[location]][[outcome]][["modmain"]]
+    
+    # Pull temperature crossbasis from previous model
+    cbtemp <- mainlist[[location]][[outcome]][["cbtemp"]]
     
     #--------------------------
     # MODEL WITH EXTENDED LAGS

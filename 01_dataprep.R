@@ -3,7 +3,6 @@
 
 
 # Import and combine UFP/mortality/covariates data
-# Define parameters
 
 ################################################################################
 
@@ -12,7 +11,7 @@
 #---------------
 
 # Load UFP data
-ufp <- read.csv("UFPdata/UFP_cleaned.csv")
+ufpdf <- read.csv("UFPdata/UFP_cleaned.csv")
 
 # Load mortality and covariates data, add area column
 mortenv <- read.csv("data/LndWestMidBUA_mortality_env_2003_2019.csv") %>%
@@ -20,7 +19,7 @@ mortenv <- read.csv("data/LndWestMidBUA_mortality_env_2003_2019.csv") %>%
 
 # Combine data sets, reorder columns
 combinedata <- mortenv %>%
-  left_join(ufp, join_by(date, area)) %>%
+  left_join(ufpdf, join_by(date, area)) %>%
   select(date, area, site, ufp, nonext, cvd, resp, tmean, no2, pm25)
 
 # Reformat date to date class
@@ -63,59 +62,6 @@ dlist <- lapply(dlist, function(data){
 })
 
 #---------------
-# Define parameters
-#---------------
-
-# MAIN ANALYSIS
-
-# Spline of time
-dfspltime <- 7 # per year
-spltime_ex <- expression(ns(data$date, df=round(dfspltime*nrow(data)/365.25)))
-    # Uses an expression that is evaluated for each site within the loop 
-
-# Define the unit increase for calculating effect estimates
-unitinc <- 10000
-
-# Store the mortality outcomes included in the analysis 
-outcomes <- c("nonext", "cvd", "resp")
-
-# Define crossbasis for temperature
-ktemp <- expression(quantile(data$tmean, c(10, 75, 90)/100, na.rm = T))
-cbtemp_ex <- expression(crossbasis(data$tmean, lag = 3, argvar = list(fun = "ns", 
-                    knots = eval(ktemp)), arglag = list(fun = "strata", breaks = 1)))
-
-# Define vector of West Midlands sites for pooling
-birmsites <- names(dlist)[2:3]
-
-# SECONDARY ANALYSIS 
-
-# Choose length of extended lag
-lagufp <- 5 
-
-# Define spline for UFP for nonlinear E-R
-dfsplufp <- 3
-kufp <- quantile(ufp$ufp, 0.5, na.rm=T)
-splufp_ex <- expression(onebasis(data$ufp, "ns", knots = kufp))
-
-# Define range for nonlinear predictions (to ignore outliers)
-predup <- 50000 # upper limit for range of predictions (approx 99.5%)
-preds <- seq(0, predup, length = 30)
-
-# MISC
-
-# Import QAIC function
-QAIC <- function(model) {
-  phi <- summary(model)$dispersion
-  loglik <- sum(dpois(model$y, model$fitted.values, log=TRUE))
-  return(-2*loglik + 2*summary(model)$df[3]*phi)
-}
-
-#---------------
 # Remove unneeded objects
 #---------------
 rm(combinedata, holidays, mortenv)
-
-
-
-
-

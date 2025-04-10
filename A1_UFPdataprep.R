@@ -104,6 +104,9 @@ ufp <- ufp %>%
   mutate(london = ifelse(london < 1, NA, london)) %>%
   mutate(wmid = ifelse(wmid < 1, NA, wmid))
 
+# Remove 2003-08-18 and 2003-08-17 due to indication of error (extreme high values before period of missings)
+ufp$wmid[ufp$date == as.Date("2003-08-18") | ufp$date == as.Date("2003-08-17") ] <- NA
+
 # For sensitivity analysis: trim top and bottom 5% 
 #ufp <- ufp %>%
 #  mutate(london = ifelse(london <= quantile(london, 0.05, na.rm=T), NA, london)) %>%

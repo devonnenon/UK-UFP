@@ -13,10 +13,14 @@ mainlist <- lapply(names(dlist), function(location){
   data <- dlist[[location]]
 
   # Define spline of time
-  spltime <- eval(spltime_ex)
+  spltime_param <- list(data$date, df=round(dfspltime*nrow(data)/365.25))
+  spltime <- do.call(spltimefun, spltime_param)
   
   # Define temperature crossbasis
-  cbtemp <- eval(cbtemp_ex)
+  ktemp <- quantile(data$tmean, c(10,75,90)/100, na.rm=T) # place knots at 10,75,90 of temperature
+  argvartmean <- list(fun="bs", knots=ktemp, degree=2)
+  cbtemp <- crossbasis(data$tmean, lag=lagtmean, argvar=argvartmean,
+                        arglag=arglagtmean)
   
   # Loop on the outcomes
   causes_results <- lapply(outcomes, function(outcome){
@@ -40,7 +44,8 @@ mainlist <- lapply(names(dlist), function(location){
       modmain = modmain,
       estRR = est,
       estperc = percchange,
-      outcome = outcome
+      outcome = outcome,
+      cbtemp = cbtemp
     )
     return(result)
   })
@@ -79,5 +84,4 @@ mainlist[["wmid_pool"]] <- lapply(outcomes, function(outcome){
   )
   return(results)
 }) ; names(mainlist[["wmid_pool"]]) <- outcomes
-
 

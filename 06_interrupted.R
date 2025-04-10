@@ -20,10 +20,14 @@ for(i in 1:(length(locations)-1)){
   
   # Redefine parameters from main model
   # Define spline of time
-  spltime <- eval(spltime_ex)
+  spltime_param <- list(data$date, df=round(dfspltime*nrow(data)/365.25))
+  spltime <- do.call(spltimefun, spltime_param)
   
   # Define temperature crossbasis
-  cbtemp <- eval(cbtemp_ex)
+  ktemp <- quantile(data$tmean, c(10,75,90)/100, na.rm=T) # place knots at 10,75,90 of temperature
+  argvartmean <- list(fun="bs", knots=ktemp, degree=2)
+  cbtemp <- crossbasis(data$tmean, lag=lagtmean, argvar=argvartmean,
+                       arglag=arglagtmean)
   
   # Define indicator for 2008 change point (new)
   data$post2008 <- year(data$date) >= 2008
@@ -33,6 +37,9 @@ for(i in 1:(length(locations)-1)){
     #outcome <- "nonext"
     # Pull previous model for this location and outcome
     modmain <- mainlist[[location]][[outcome]][["modmain"]]
+    
+    # Pull temperature crossbasis from previous model
+    cbtemp <- mainlist[[location]][[outcome]][["cbtemp"]]
     
     # Rerun model with interaction with change point indicator
     modpost <- update(modmain, . ~ . - ufp01 + ufp01:post2008)

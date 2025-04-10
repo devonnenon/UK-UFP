@@ -49,12 +49,13 @@ nonlinplotdf$outcome <- factor(nonlinplotdf$outcome, levels = c("nonext", "cvd",
 # Plot
 ggplot(data = nonlinplotdf, aes(x = pred)) +
   geom_hline(yintercept = 1) +
+  geom_vline(xintercept = kufp)+
   geom_line(aes(y = fit), linewidth = 0.8, color = "steelblue") +
-  geom_line(aes(y = fitlin), linewidth = 0.7, color = "grey70",linetype = 2)+
+  geom_line(aes(y = fitlin), linewidth = 0.7, color = "grey30",linetype = 2)+
   geom_ribbon(aes(ymax = upper, ymin = lower), alpha = 0.2, fill = "steelblue1") +
   geom_ribbon(aes(ymax = upperlin, ymin = lowerlin), alpha = 0.2, fill = "grey70")+
   theme_bw() +
-  scale_x_continuous(limits = c(0, predup), n.breaks = 3) +
+  scale_x_continuous(limits = c(0, maxpred), n.breaks = 3) +
   theme(panel.grid = element_line(linetype = 3)) +
   labs(y = "RR", x = PNClab) +
   theme(strip.background = element_blank(), strip.placement = "outside") +
@@ -153,7 +154,7 @@ intplotdf %>%
 # Scatterplots 
 
 # Ensure date is in Date format
-ufp$date <- as.Date(ufp$date)
+ufpdf$date <- as.Date(ufp$date)
 
 # Create labels for this plot
 variablelabs <- c("PNC\n(n/cm3)","Non-external\n(n/day)", "Cariovasular\n(n/day)", "Respiratory\n(n/day)")
@@ -196,3 +197,4 @@ ggplot(data = scatterdf, aes(x = date, y = value))+
                date_breaks = "2 year") +
   facet_grid(type~area, scales = "free", switch = "y",
              labeller = labeller(type = variablelabs, area = locationlabs2))
+

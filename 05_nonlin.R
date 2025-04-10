@@ -20,13 +20,18 @@ for(i in 1:length(locations)){
   
   # Redefine parameters from main model
   # Define spline of time
-  spltime <- eval(spltime_ex)
+  spltime_param <- list(data$date, df=round(dfspltime*nrow(data)/365.25))
+  spltime <- do.call(spltimefun, spltime_param)
   
   # Define temperature crossbasis
-  cbtemp <- eval(cbtemp_ex)
+  ktemp <- quantile(data$tmean, c(10,75,90)/100, na.rm=T) # place knots at 10,75,90 of temperature
+  argvartmean <- list(fun="bs", knots=ktemp, degree=2)
+  cbtemp <- crossbasis(data$tmean, lag=lagtmean, argvar=argvartmean,
+                       arglag=arglagtmean)
   
   # Define spline for ufp (new)
-  splufp <- eval(splufp_ex)
+  splufp_param_inloop <- c(splufpfun, list(x = data$ufp), splufp_param)
+  splufp <- do.call(onebasis, splufp_param_inloop)
   
   # Define linear function for later plotting
   linufp <- onebasis(data$ufp01, fun = "lin")
@@ -36,6 +41,10 @@ for(i in 1:length(locations)){
     #outcome <- "nonext"
     # Pull previous model for this location and outcome
     modmain <- mainlist[[location]][[outcome]][["modmain"]]
+    
+    # Pull temperature crossbasis from previous model
+    cbtemp <- mainlist[[location]][[outcome]][["cbtemp"]]
+    
     
     # MODEL WITH NONLINEAR E-R
     modspl <- update(modmain, . ~ . - ufp01 + splufp)
@@ -101,8 +110,8 @@ nonlinlist[["wmid_pool"]] <- lapply(outcomes, function(outcome){
   # Get full UFP distribution in W. Midlands
   data <- rbind(dlist[["birmcen"]], dlist[["birmtyb"]])
   
-  # Define spline for prediction
-  splufp <- eval(splufp_ex)
+  splufp_param_inloop <- c(splufpfun, list(x = data$ufp), splufp_param)
+  splufp <- do.call(onebasis, splufp_param_inloop)
   
   linufp <- onebasis(data$ufp01, fun = "lin")
   
@@ -117,3 +126,4 @@ nonlinlist[["wmid_pool"]] <- lapply(outcomes, function(outcome){
   results <- list(modspl = meta, cpspl = cpspl, modlin = metalin, cplin = cplin)
   return(results)
 }) ; names(nonlinlist[["wmid_pool"]]) <- outcomes
+
