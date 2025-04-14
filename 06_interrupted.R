@@ -6,16 +6,12 @@
 
 ################################################################################
 
-# Get the list of location names
-locations <- names(dlist)
-
 # Initialize empty list
 intlist <- list()
 
 # Loop on the different locations
-for(i in 1:(length(locations)-1)){
-  print(i)
-  location <- locations[[i]]
+for(location in names(dlist[names(dlist) != "birmtyb"])){
+  print(location)
   data <- dlist[[location]]
   
   # Redefine parameters from main model
@@ -66,6 +62,6 @@ for(i in 1:(length(locations)-1)){
     return(interrupted)
   })
   names(outcomemodels) <- outcomes
-  intlist[[i]] <- outcomemodels
-} ; names(intlist) <- names(dlist[1:2])
+  intlist[[location]] <- outcomemodels
+}
 

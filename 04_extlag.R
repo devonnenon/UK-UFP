@@ -6,16 +6,12 @@
 
 ################################################################################
 
-# Get the list of location names
-locations <- names(dlist)
-
 # Initialize empty lists
 extlaglist <- list()
 
 # Loop on the different locations
-for(i in 1:length(locations)){ #for loop - lapply not working for some reason
-  print(i)
-  location <- locations[[i]]
+for(location in names(dlist)){
+  print(location)
   data <- dlist[[location]]
   
   # Redefine parameters from main model
@@ -68,8 +64,8 @@ for(i in 1:length(locations)){ #for loop - lapply not working for some reason
     return(extlags)
   })
   names(outcomemodels) <- outcomes
-  extlaglist[[i]] <- outcomemodels
-} ; names(extlaglist) <- names(dlist)
+  extlaglist[[location]] <- outcomemodels
+} 
 
 
 # -------------

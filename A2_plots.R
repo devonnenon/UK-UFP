@@ -46,10 +46,13 @@ nonlinplotdf <- do.call(rbind, lapply(locationsplot, function(location){
 # Reorder the 'outcome' variable as a factor with the desired levels
 nonlinplotdf$outcome <- factor(nonlinplotdf$outcome, levels = c("nonext", "cvd", "resp"))
 
+# Save plot
+#pdf(file = paste("results_figures/nonlinplot", as.character(format(Sys.time(), "%m-%d_%H%M")), ".pdf", sep = ""),
+#    width = 8, height = 5)
 # Plot
 ggplot(data = nonlinplotdf, aes(x = pred)) +
   geom_hline(yintercept = 1) +
-  geom_vline(xintercept = kufp)+
+  #geom_vline(xintercept = kufp)+
   geom_line(aes(y = fit), linewidth = 0.8, color = "steelblue") +
   geom_line(aes(y = fitlin), linewidth = 0.7, color = "grey30",linetype = 2)+
   geom_ribbon(aes(ymax = upper, ymin = lower), alpha = 0.2, fill = "steelblue1") +
@@ -63,6 +66,7 @@ ggplot(data = nonlinplotdf, aes(x = pred)) +
              switch = "y", 
              #scales = "free_y", 
              labeller = labeller(outcome = outcomelabs, location = locationlabs))
+#dev.off()
 
 ################################################################################
 # Extended lag structure 
@@ -88,6 +92,9 @@ lagsplotdf <- do.call(rbind, lapply(locationsplot, function(location){
 
 colors <- c("cumul" = "steelblue1", "indiv" = "black")
 
+# save plot 
+#pdf(file = paste("results_figures/lagsplot", as.character(format(Sys.time(), "%m-%d_%H%M")), ".pdf", sep = ""),
+#    width = 8, height = 4)
 # Plot
 lagsplotdf %>%
   ggplot(aes(x = lag, color = type))+
@@ -109,17 +116,17 @@ lagsplotdf %>%
              switch = "y", 
              #scales = "free_y", 
              labeller = labeller(outcome = outcomelabs, location = locationlabs))
+#dev.off()
 
 
 ################################################################################
 # Interrupted - effect before and after 2008
 
 # Locations used in this analysis
-intlocs <- c("nkens", "birmcen")
 locationlabsint <- c("nkens" = "London", "birmcen" = "W. Midlands")
 
 # Data frame
-intplotdf <- do.call(rbind, lapply(intlocs, function(location){
+intplotdf <- do.call(rbind, lapply(names(intlist), function(location){
   outcomes_result <- do.call(rbind, lapply(outcomes, function(outcome){
     est <- intlist[[location]][[outcome]][["estRR"]]
     df <- data.frame(
@@ -135,11 +142,14 @@ intplotdf <- do.call(rbind, lapply(intlocs, function(location){
   (return(outcomes_result))
 })) 
 
+
+#pdf(file = paste("results_figures/intplot", as.character(format(Sys.time(), "%m-%d_%H%M")), ".pdf", sep = ""),
+#    width = 8, height = 4)
 # Plot
 intplotdf %>%
   ggplot(aes(x = when))+
   geom_hline(yintercept = 1, color = "grey", linetype = 2)+
-  geom_point(aes(y=est))+
+  geom_point(aes(y=est), shape = 18)+
   geom_errorbar(aes(ymin = est_cilow, ymax = est_cihigh), linewidth = 0.5, width = 0.25) + 
   theme_bw()+
   labs(x = "Period", y = "RR")+
@@ -148,7 +158,7 @@ intplotdf %>%
              switch = "y", 
              #scales = "free_y", 
              labeller = labeller(outcome = outcomelabs, location = locationlabsint))
-
+#dev.off()
 
 ################################################################################
 # Scatterplots 

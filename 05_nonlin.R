@@ -6,16 +6,12 @@
 
 ################################################################################
 
-# Get the list of location names
-locations <- names(dlist)
-
 # Initialize empty lists
 nonlinlist <- list()
 
 # Loop on the different locations
-for(i in 1:length(locations)){
-  print(i)
-  location <- locations[[i]]
+for(location in names(dlist)){
+  print(location)
   data <- dlist[[location]]
   
   # Redefine parameters from main model
@@ -68,8 +64,8 @@ for(i in 1:length(locations)){
     return(nonlin)
   })
   names(outcomemodels) <- outcomes
-  nonlinlist[[i]] <- outcomemodels
-} ; names(nonlinlist) <- names(dlist)
+  nonlinlist[[location]] <- outcomemodels
+}
 
 # -------------
 # Pool West Midlands sites
