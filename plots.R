@@ -23,7 +23,9 @@ RRlab <- bquote("Risk ratio per"~ .(unitinc)~"n/"~cm^3~"increase in PNC")
 
 ################################################################################
 # Nonlinear E-R curves
-
+locationsplot <- c("birmcen", "birmtyb", "wmid_pool")
+locationlabs <- c("2003-2009", "2009-2013", "Pooled")
+names(locationlabs) <- c("birmcen", "birmtyb", "wmid_pool")
 # Create data frame with predictions in long format
 nonlinplotdf <- do.call(rbind, lapply(locationsplot, function(location){
   outcomes_result <- do.call(rbind, lapply(outcomes, function(outcome){
@@ -53,6 +55,7 @@ pdf(file = paste("results_figures/nonlinplot", as.character(format(Sys.time(), "
     width = 8, height = 5)
 # Plot
 ggplot(data = nonlinplotdf, aes(x = pred)) +
+  #coord_cartesian(ylim = c(0.99,1.01))+ # uncomment to look closely at the axis
   geom_hline(yintercept = 1, color = "grey", linetype = "dashed")+
   #geom_vline(xintercept = kufp)+
   geom_line(aes(y = fit), linewidth = 0.8, color = "steelblue") +

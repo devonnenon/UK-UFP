@@ -16,7 +16,6 @@ unitinc <- 10000
 
 # Store the sites and outcomes in vectors for consistency
 outcomes <- c("nonext", "cvd", "resp")
-
 birmsites <- c("birmcen", "birmtyb")
 
 # Define param of temp function
@@ -33,7 +32,9 @@ arglagufp <- list(fun = "integer")
 
 # Define spline for UFP for nonlinear E-R
 kufp <- quantile(ufpdf$ufp, 0.5, na.rm=T) # 1 knot at 50%
-bdkufp <- sapply(dlist, function(x) range(x$ufp, na.rm = T)) |> range() #boundary knots at range
+bdkufp <- c(min(ufpdf$ufp, na.rm=T), max(ufpdf$ufp[ufpdf$ufp != max(ufpdf$ufp, na.rm=T)], na.rm=T))
+  #sapply(dlist, function(x) range(x$ufp, na.rm = T)) |> range() 
+      #boundary knots at ends of UFP range, excluding the outlier in birmcen
 splufpfun <- "ns"
 splufp_param <- list(knots = kufp, Boundary.knots = bdkufp) # If using bs, add degree = 
 

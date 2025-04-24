@@ -16,7 +16,7 @@ outcomes <- c("nonext", "cvd", "resp")
 # ----------------
 tabmain <- do.call(rbind, lapply(names(mainlist), function(location){
   outcomeres <- do.call(rbind, lapply(outcomes, function(outcome){
-    est <- round(mainlist[[location]][[outcome]][["estRR"]],4)
+    est <- round(mainlist[[location]][[outcome]][["estRR"]],3)
     return(data.frame(location = location, outcome = outcome, 
                       RR = paste0(est[1]," (", est[2], " to ", est[3], ")")))
   }))

@@ -70,9 +70,9 @@ mainlist[["wmid_pool"]] <- lapply(outcomes, function(outcome){
   meta <- mixmeta(coefs ~ 1, variances, method = "fixed")
   
   # Predict change for 10,000 unit increase of UFP
-  est <- as.data.frame(t(exp(predict(meta, ci = T, newdata = data.frame(inc = unitinc)))))
+  est <- as.data.frame(t(exp(predict(meta, ci = T)[1,]*10000)))
   colnames(est) <- c("est", "lower", "upper")
-  
+
   # Calculate as % change
   perc <- (est - 1)*100
   
@@ -84,4 +84,6 @@ mainlist[["wmid_pool"]] <- lapply(outcomes, function(outcome){
   )
   return(results)
 }) ; names(mainlist[["wmid_pool"]]) <- outcomes
+
+
 
