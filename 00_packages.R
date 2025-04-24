@@ -25,4 +25,5 @@ library(mixmeta) # for pooling West Midlands sites
 
 # Plotting
 library(ggplot2)
+library(patchwork)
 

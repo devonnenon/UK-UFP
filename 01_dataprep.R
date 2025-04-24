@@ -48,9 +48,11 @@ dlist <- lapply(unique(combinedata$site), function(x){
 })
 names(dlist) <- unique(combinedata$site)
 
-# Create UFP moving average
+# Create moving averages for UPF, NO2, and PM2.5
 dlist <- lapply(dlist, function(data){
   data$ufp01 <- runMean(data$ufp, 0:1)
+  data$no201 <- runMean(data$no2, 0:1)
+  data$pm2501 <- runMean(data$pm25, 0:1)
   return(data)
 })
 

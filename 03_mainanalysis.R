@@ -64,7 +64,7 @@ mainlist[["wmid_pool"]] <- lapply(outcomes, function(outcome){
     mainlist[[site]][[outcome]][["modmain"]][["coefficients"]][["ufp01"]]))
   
   variances <- unlist(lapply(birmsites, function(site) 
-    summary(mainlist[[site]][[outcome]][["modmain"]])$coefficients["ufp01",2]))
+    vcov(mainlist[[site]][[outcome]][["modmain"]])["ufp01","ufp01"]))
   
   # Standard meta analysis with fixed effects
   meta <- mixmeta(coefs ~ 1, variances, method = "fixed")
