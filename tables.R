@@ -80,3 +80,21 @@ tabint <- do.call(rbind, lapply(locationsint, function(location){
 tabint
 
 write.csv(tabint, file = "results_figures/interruptedtable.csv")
+
+# --------------------
+# Descriptive analysis
+# --------------------
+desclist <- list(london = dlist[["nkens"]], 
+                 wmid = rbind(dlist[["birmcen"]], dlist[["birmtyb"]]))
+
+tabdesc <- do.call(cbind, lapply(desclist, function(location){
+  meds <- round(t(as.data.frame(apply(location[4:10],2,median, na.rm=T))),1)
+  iqr <- round(t(as.data.frame(apply(location[4:10],2,quantile, c(0.25, 0.75), na.rm=T))),1)
+  
+  row <- paste0(meds," (",iqr[,1],", ",iqr[,2],")")
+  return(row)
+})) ; rownames(tabdesc) <- names(desclist[[1]][4:10])
+
+print(tabdesc)
+
+write.csv(tabdesc, file = "results_figures/descriptivestable.csv")
