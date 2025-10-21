@@ -11,16 +11,23 @@
 #---------------
 
 # Load UFP data
-ufpdf <- read.csv("UFPdata/UFP_cleaned.csv")
+ufpdf <- fread("UFPdata/UFP_cleaned_allsites.csv") %>% 
+  filter(site %in% c("kensington", "birmcen", "birmtyb"))
 
 # Load mortality and covariates data, add area column
-mortenv <- read.csv("data/LndWestMidBUA_mortality_env_2003_2019.csv") %>%
-  mutate(area = ifelse(BUA11NM == "Greater London BUA", "london", "wmid"))
+mortenv <- fread("data/LndWestMidBUA_mortality_env_2003_2019.csv") %>%
+  mutate(area = ifelse(BUA11NM == "Greater London BUA", "london", "wmid")) %>%
+  select(-BUA11NM)
+
+# Run for kensington sensitivity analysis - replaces london data with kensington data
+# mortenvkens <- fread("data/Kensington/Kens_mortality_env_2003_2019.csv") %>%
+#   mutate(area = "london") %>%
+#   select(-BUASD11NM, -lad11cdo)
+# mortenv <- rbind(mortenv %>% filter(area == "wmid"), mortenvkens)
 
 # Combine data sets, reorder columns
-combinedata <- mortenv %>%
-  left_join(ufpdf, join_by(date, area)) %>%
-  select(date, area, site, ufp, nonext, cvd, resp, tmean, no2, pm25)
+combinedata <- ufpdf[mortenv, on = .(date, area)]
+setcolorder(combinedata, c("date", "area", "site"))
 
 # Reformat date to date class
 combinedata$date <- as.Date(combinedata$date)
@@ -44,7 +51,7 @@ combinedata <- combinedata %>%
 dlist <- lapply(unique(combinedata$site), function(x){
   sitecombinedata <- combinedata %>%
     filter(site == x)
-  return(sitecombinedata)
+  return(as.data.frame(sitecombinedata))
 })
 names(dlist) <- unique(combinedata$site)
 

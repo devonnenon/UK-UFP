@@ -6,7 +6,7 @@
 
 ################################################################################
 
-locationsplot <- c("nkens", "wmid_pool")
+locationsplot <- c("kensington", "wmid_pool")
 locationnames <- c("London", "WestMidlands")
 names(locationsplot) <- locationnames
 outcomes <- c("nonext", "cvd", "resp")
@@ -25,7 +25,7 @@ tabmain <- do.call(rbind, lapply(names(mainlist), function(location){
 
 print(tabmain, quote = F)
 
-write.csv(tabmain, file = "results_figures/maintable.csv")
+write.csv(tabmain, file = paste("results_figures/maintable", as.character(format(Sys.time(), "%m-%d_%H%M")), ".csv", sep = "")) 
 
 # ----------------
 # Extended lags
@@ -49,11 +49,11 @@ tabextlag <- do.call(rbind, lapply(names(mainlist), function(location){
 
 noquote(tabextlag)
 
-write.csv(tabextlag, file = "results_figures/extlagtable.csv")
+write.csv(tabextlag, file = paste("results_figures/extlagtable", as.character(format(Sys.time(), "%m-%d_%H%M")), ".csv", sep = "")) 
 # --------------------
 # Interrupted analysis 
 # --------------------
-locationsint <- c("nkens", "birmcen")
+locationsint <- c("kensington", "birmcen")
 
 tabint <- do.call(rbind, lapply(locationsint, function(location) {
   outcomesres <- do.call(rbind, lapply(outcomes, function(outcome){
@@ -79,22 +79,22 @@ tabint <- do.call(rbind, lapply(locationsint, function(location){
 
 tabint
 
-write.csv(tabint, file = "results_figures/interruptedtable.csv")
+write.csv(tabint, file = paste("results_figures/interruptedtable", as.character(format(Sys.time(), "%m-%d_%H%M")), ".csv", sep = "")) 
 
 # --------------------
 # Descriptive analysis
 # --------------------
-desclist <- list(london = dlist[["nkens"]], 
+desclist <- list(london = dlist[["kensington"]], 
                  wmid = rbind(dlist[["birmcen"]], dlist[["birmtyb"]]))
-
+desclist <- dlist
 tabdesc <- do.call(cbind, lapply(desclist, function(location){
-  meds <- round(t(as.data.frame(apply(location[4:10],2,median, na.rm=T))),1)
-  iqr <- round(t(as.data.frame(apply(location[4:10],2,quantile, c(0.25, 0.75), na.rm=T))),1)
+  meds <- round(t(as.data.frame(apply(location[,4:10],2,median, na.rm=T))),0)
+  iqr <- round(t(as.data.frame(apply(location[,4:10],2,quantile, c(0.25, 0.75), na.rm=T))),0)
   
   row <- paste0(meds," (",iqr[,1],", ",iqr[,2],")")
   return(row)
-})) ; rownames(tabdesc) <- names(desclist[[1]][4:10])
+})) ; rownames(tabdesc) <- names(desclist[[1]][,4:10])
 
 print(tabdesc)
 
-write.csv(tabdesc, file = "results_figures/descriptivestable.csv")
+write.csv(tabdesc, file = paste("results_figures/descriptivestable", as.character(format(Sys.time(), "%m-%d_%H%M")), ".csv", sep = "")) 

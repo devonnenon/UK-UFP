@@ -44,7 +44,7 @@ files <- c(
   ufp11 = "AirQualityDataHourly2011.csv",
   ufp12_15 = "AirQualityDataHourly2012_2015.csv",
   ufp16_19 = "AirQualityDataHourly2016_2019.csv"
-  )
+)
 
 # Load the data from all files into a list
 ufp_list <- lapply(files, function(file){
@@ -55,13 +55,13 @@ ufp_list <- lapply(files, function(file){
     df <- read_excel(paste0("UFPdata/", file), sheet = "Data", .name_repair = "universal", 
                      col_types = coltypes)
   } else {
-  # extract column names from row 4
-   colnames <- read.csv(paste0("UFPdata/", file), skip = 3, nrows = 1, header = T)
-   # get data, starting at row 11 to ignore heading rows
-   df <- fread(paste0("UFPdata/", file), skip = 11, header = F)
-   # add column names to the data
-   names(df) <- names(colnames)
-   return(df)
+    # extract column names from row 4
+    colnames <- read.csv(paste0("UFPdata/", file), skip = 3, nrows = 1, header = T)
+    # get data, starting at row 11 to ignore heading rows
+    df <- fread(paste0("UFPdata/", file), skip = 11, header = F)
+    # add column names to the data
+    names(df) <- names(colnames)
+    return(df)
   }
 })
 names(ufp_list) <- names(files)
@@ -71,7 +71,7 @@ ufp_list[["ufp16_19"]]$Site.Name <- as.Date(ufp_list[["ufp16_19"]]$Site.Name, "%
 
 # Delete extra rows that are hidden in 2005 file
 ufp_list[["ufp05"]] <- ufp_list[["ufp05"]] %>%
-  select(1:9)
+  select(1:8)
 
 # Fix shifted times in 2008-2009 and 2005
 halfhour <- 30*60 # 30 minutes, 60 seconds
@@ -84,25 +84,41 @@ ufp_list[["ufp05"]][5:nrow(ufp_list[["ufp05"]])-1,]$Date.Time <- # Only some row
 ufp_list[["ufp04"]] <- ufp_list[["ufp04"]] %>%
   filter(row_number() <= n()-1)
 
+# Create vector of site location names and associated strings
+sites <- c("belfast", "birmingham", "glasgow", "bloomsbury", "manchester", "kensington",
+           "talbot", "marylebone", "harwell", "honor", "chilbolton")
+
 # Extract data for selected sites from each file and combine into single data frame
 ufp <- do.call(rbind, lapply(ufp_list, function(df){
+  df <- as.data.frame(df)
   # First column always has date data, add it to a new column named date
   df$date <- as.Date(df%>%pull(1))
-  # find the index of the column that has "Kensington" in its name
-  nkensindex <- which(grepl("Kensington", names(df)))
-  # if such a column exists, add that data to a new column nkens in numeric format, else NA
-  if (length(nkensindex)>0) df$london <- as.numeric(df%>%pull(nkensindex)) else df$london <- as.numeric(NA)
-  birmindex <- which(grepl("Birmingham", names(df)))
-  if (length(birmindex)>0) df$wmid <- as.numeric(df%>%pull(birmindex)) else df$wmid <- as.numeric(NA)
+  df[,sites] <- as.numeric(NA)
+  for(i in 1:length(sites)){
+    sitename <- sites[i]
+    
+    siteindex <- which(grepl(sitename, names(df[,1:(length(names(df))-length(sites))]), ignore.case = T))
+    #print(siteindex)
+    if(length(siteindex)>0) {
+      df[sitename] <- as.numeric(df%>%pull(siteindex))}
+    # else {
+    #   df[sitename] <- as.numeric(NA)
+    # }
+     }
   df <- df %>%
-    select(date, london, wmid)
+    select(c("date",sites))
   return(df)
 }))
 
 # Remove all measurements below 1 (implausible values)
 ufp <- ufp %>%
-  mutate(london = ifelse(london < 1, NA, london)) %>%
-  mutate(wmid = ifelse(wmid < 1, NA, wmid))
+  mutate(across(where(is.numeric), ~ ifelse(.x < 1, NA, .x)))
+
+#df[,-1] <- lapply(df[,-1], function(x) ifelse(x < 1, NA, x))
+
+# ufp <- ufp %>%
+#   mutate(london = ifelse(london < 1, NA, london)) %>%
+#   mutate(wmid = ifelse(wmid < 1, NA, wmid))
 
 # Remove 2003-08-18 and 2003-08-17 due to indication of error (extreme high values before period of missings)
 #ufp$wmid[ufp$date == as.Date("2003-08-18") | ufp$date == as.Date("2003-08-17") ] <- NA
@@ -122,22 +138,38 @@ ufp_agg$date <- as.Date(ufp_agg$date)
 
 # Change all of 2017 to NA (Repoerted issues with the equipment, strangely low values)
 ufp_agg <- ufp_agg %>%
-  mutate(london = ifelse(year(date) == 2017, NA, london)) %>%
-  mutate(wmid = ifelse(year(date) == 2017, NA, wmid))
+  mutate(kensington = ifelse(year(date) == 2017, NA, kensington)) 
 
-# Pivot to longer format and add site column
+# # Pivot to longer format and add site column
+# ufp_agg_long <- ufp_agg %>%
+#   pivot_longer(cols = c(london, wmid), cols_vary = "slowest", 
+#                names_to = "area", values_to = "ufp") %>%
+#   # add site column to indicate the site change in birmingham 
+#   mutate(site = ifelse(area == "wmid" & date < as.Date("2009-01-12"), "birmcen", "birmtyb")) %>%
+#   # add site column for london data
+#   mutate(site = ifelse(area == "london", "nkens", site)) %>%
+#   # reorder columns
+#   select(date, area, site, ufp)
+
 ufp_agg_long <- ufp_agg %>%
-  pivot_longer(cols = c(london, wmid), cols_vary = "slowest", 
-               names_to = "area", values_to = "ufp") %>%
-  # add site column to indicate the site change in birmingham 
-  mutate(site = ifelse(area == "wmid" & date < as.Date("2009-01-12"), "birmcen", "birmtyb")) %>%
-  # add site column for london data
-  mutate(site = ifelse(area == "london", "nkens", site)) %>%
-  # reorder columns
-  select(date, area, site, ufp)
+  pivot_longer(cols = sites, cols_vary = "slowest", 
+               names_to = "site", values_to = "ufp")
 
-  
+# Seperate the birmingham data by site (columns have the same name, but change happened in 2009)
+ufp_agg_long <- ufp_agg_long %>%
+  mutate(site = ifelse(site == "birmingham" & date >= as.Date("2009-01-12"), "birmingham2", site)) %>%
+  mutate(site = ifelse(site == "birmingham", "birmcen", site)) %>%
+  mutate(site = ifelse(site == "birmingham2", "birmtyb", site))
+
+# Add area column for locations with multiple measurement sites
+londonsites <- c("bloomsbury", "kensington", "marylebone", "honor")
+wmidsites <- c("birmcen", "birmtyb")
+
+ufp_agg_long$area <- ufp_agg_long$site
+ufp_agg_long$area[ufp_agg_long$site %in% londonsites] <- "london"
+ufp_agg_long$area[ufp_agg_long$site %in% wmidsites] <- "wmid"
+
 # Save data
-write.csv(ufp_agg_long, file = "UFPdata/UFP_cleaned.csv", row.names = F)
+#write.csv(ufp_agg_long, file = "UFPdata/UFP_cleaned_allsites.csv", row.names = F)
 
 
