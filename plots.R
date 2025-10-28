@@ -9,12 +9,12 @@ library(ggplot2)
 #readRDS("results_figures/results.RData")
 
 # Create vectors of desired results and outcomes for plots
-locationsplot <- c("nkens", "wmid_pool")
+locationsplot <- c("kensington", "wmid_pool")
 outcomes <- c("nonext", "cvd", "resp")
 
 # Create labels for facets
 locationlabs <- c("London", "West Midlands")
-names(locationlabs) <- c("nkens", "wmid_pool")
+names(locationlabs) <- c("kensington", "wmid_pool")
 outcomelabs <- c("Non-accidental", "Cardiovasular", "Respiratory")
 names(outcomelabs) <- c("nonext", "cvd", "resp")
 PNClab<- bquote("PNC (n/"*cm^3*")")
@@ -23,9 +23,9 @@ RRlab <- bquote("Risk ratio per"~ .(unitinc)~"n/"~cm^3~"increase in PNC")
 
 ################################################################################
 # Nonlinear E-R curves
-locationsplot <- c("birmcen", "birmtyb", "wmid_pool")
-locationlabs <- c("2003-2009", "2009-2013", "Pooled")
-names(locationlabs) <- c("birmcen", "birmtyb", "wmid_pool")
+#locationsplot <- c("birmcen", "birmtyb", "wmid_pool")
+#locationlabs <- c("2003-2009", "2009-2013", "Pooled")
+#names(locationlabs) <- c("birmcen", "birmtyb", "wmid_pool")
 # Create data frame with predictions in long format
 nonlinplotdf <- do.call(rbind, lapply(locationsplot, function(location){
   outcomes_result <- do.call(rbind, lapply(outcomes, function(outcome){
@@ -132,7 +132,7 @@ dev.off()
 # Interrupted - effect before and after 2008
 
 # Locations used in this analysis
-locationlabsint <- c("nkens" = "London", "birmcen" = "West Midlands")
+locationlabsint <- c("kensington" = "London", "birmcen" = "West Midlands")
 
 # Data frame
 intplotdf <- do.call(rbind, lapply(names(intlist), function(location){
@@ -179,7 +179,7 @@ intplotdf$when <- factor(intplotdf$when, levels = c("pre", "post"))
 # Define shared y axis limit
 ylimint <- range(intplotdf[1:3])
 
-londonintplot <- ggplot(intplotdf %>% filter(location == "nkens"), aes(x = when))+
+londonintplot <- ggplot(intplotdf %>% filter(location == "kensington"), aes(x = when))+
   geom_hline(yintercept = 1, color = "grey", linetype = "dashed")+
   geom_point(aes(y=est), shape = 18, size = 2)+
   geom_errorbar(aes(ymin = est_cilow, ymax = est_cihigh), linewidth = 0.5, width = 0.15) + 
@@ -198,7 +198,7 @@ londonintplot <- ggplot(intplotdf %>% filter(location == "nkens"), aes(x = when)
              #scales = "free_y", 
              labeller = labeller(outcome = outcomelabs, location = locationlabsint))
 
-wmidintplot <- ggplot(intplotdf %>% filter(location != "nkens"), aes(x = when))+
+wmidintplot <- ggplot(intplotdf %>% filter(location != "kensington"), aes(x = when))+
   geom_hline(yintercept = 1, color = "grey", linetype = "dashed")+
   geom_point(aes(y=est), shape = 18, size = 2)+
   geom_errorbar(aes(ymin = est_cilow, ymax = est_cihigh), linewidth = 0.5, width = 0.15) + 
@@ -241,7 +241,7 @@ names(locationlabs2) <- c("london", "wmid")
 scatterdf <- do.call(rbind,lapply(names(dlist), function(site){
   data <- dlist[[site]]
   data$site <- site
-  data$area <- ifelse(site=="nkens", "london", "wmid")
+  data$area <- ifelse(site=="kensington", "london", "wmid")
   return(data)
 })) %>%
   select(date, area, ufp, nonext, cvd, resp)%>%

@@ -27,84 +27,54 @@ sitesdf <- sitesdf %>%
   pivot_longer(cols = !date, names_to = "site", values_to = "ufp")
 
 
-# siteslabels <- c("belfast" = "Belfast\nCentre", "birmcen" = "Birmingham\nCentre",
-#                  "birmtyb" = "Birmingham\nTyburn","glasgow" = "Glasgow\nCentre",
-#                  "bloomsbury" = "London\nBloomsbury", "kensington" = "London\nNorth Kensington",
-#                  "honor" = "London\nHonor Oak", "manchester" = "Manchester\nPicadilly")
+datamissingrate <- do.call(rbind, lapply(UB_sites, function(msite){
+  sitedata <- sitesdf %>% filter(site == msite)
+  perc <- sum(sitedata$ufp, na.rm = T) / nrow(sitedata[!is.na(sitedata$ufp),])
+  return(data.frame(site = msite, missing = perc*100))
+})) #; names(datamissingrate) <- UB_sites
+
+siteslabels <- c("bloomsbury" = "London\nBloomsbury", "kensington" = "London\nNorth Kensington",
+                 "honor" = "London\nHonor Oak", "birmcen" = "Birmingham\nCentre",
+                 "birmtyb" = "Birmingham\nTyburn", "belfast" = "Belfast Centre",
+                 "manchester" = "Manchester\nPicadilly","glasgow" = "Glasgow\nCentre")
+
+sitesvec <- c("bloomsbury", "kensington", "honor", "birmcen", "birmtyb", 
+              "belfast", "manchester", "glasgow")
 
 
 sitesdf$site <- factor(sitesdf$site, levels = c("bloomsbury", "kensington", "honor",
                                                 "birmcen", "birmtyb", "belfast", 
                                                 "manchester", "glasgow"))
                        
+pdf(file = paste("results_figures/dataavailabilityplot", as.character(format(Sys.time(), "%m-%d_%H%M")), ".pdf", sep = ""),
+    width = 8, height = 4)
 
 # Plot
 ggplot(sitesdf, aes(x = date, y = site, fill = factor(ufp))) +
   geom_raster() +
-  scale_fill_manual(values = c("0" = "lightblue", "1" = "darkblue"), na.value = NA) +
+  scale_fill_manual(values = c("0" = "tomato", "1" = "dodgerblue4"),
+                               labels = c("No data", "Data available"), na.translate = F) + #na.value = NA) +
   scale_x_date(date_breaks = "2 year", date_labels = "%Y") +
-  scale_y_discrete(limits = rev)+
+  scale_y_discrete(limits = rev, breaks = sitesvec, labels = siteslabels) +
+  # geom_text(
+  #   data = datamissingrate,
+  #   aes(x = as.Date("2002-06-30"), y = site, label = paste0(round(missing, 0), "%")),
+  #   inherit.aes = F
+  # ) +
   theme_bw() +
+  labs(
+    x = "Date",
+    y = "Measurement site",
+    fill = "Daily data availability"
+  ) +
   theme(
-    axis.title.y = element_blank(),
-    legend.position = "none",
-    axis.text.x = element_text(angle = 45, hjust = 1)
+    legend.position = c(0.87, 0.15),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    panel.grid.major.y = element_blank(),
+    panel.grid.major.x = element_line(colour = "grey85", linewidth = 0.3),
+    panel.grid.minor.x = element_line(colour = "grey85", linewidth = 0.3),
   )
 
+dev.off()
 
-
-
-# Compute availability range (first and last 1)
-availability <- sitesdf %>%
-  filter(indicator == 1) %>%
-  group_by(area) %>%
-  summarise(start = min(date), end = max(date), .groups = "drop")
-
-# Plot
-ggplot() +
-  # Availability bar in light gray
-  geom_segment(data = availability,
-               aes(x = start, xend = end, y = area, yend = area),
-               size = 8, color = "grey90", lineend = "round") +
-  # Raster overlay of 0/1 pattern
-  geom_raster(data = sitesdf,
-              aes(x = date, y = area, fill = factor(indicator))) +
-  scale_fill_manual(values = c("0" = "white", "1" = "black")) +
-  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
-  theme_minimal() +
-  theme(
-    axis.title.y = element_blank(),
-    legend.position = "none",
-    axis.text.x = element_text(angle = 45, hjust = 1)
-  )
-
-
-library(ggplot2)
-library(dplyr)
-
-# Assume you already have sitesdf with columns: date, area, indicator
-
-# Compute availability range (first and last 1 per area)
-availability <- sitesdf %>%
-  filter(indicator == 1) %>%
-  group_by(area) %>%
-  summarise(start = min(date), end = max(date), .groups = "drop")
-
-# Plot: availability bar + black ticks for 1s
-ggplot() +
-  # Availability bar in light gray
-  geom_segment(data = availability,
-               aes(x = start, xend = end, y = area, yend = area),
-               size = 8, color = "lightblue")+#, lineend = "round") +
-  # Plot only the 1’s (so grey shows through for 0’s)
-  geom_raster(data = subset(sitesdf, indicator == 1),
-              aes(x = date, y = area),
-              fill = "black") +
-  scale_x_date(date_breaks = "1 year", date_labels = "%Y") +
-  theme_minimal() +
-  theme(
-    axis.title.y = element_blank(),
-    legend.position = "none",
-    axis.text.x = element_text(angle = 45, hjust = 1)
-  )
 
