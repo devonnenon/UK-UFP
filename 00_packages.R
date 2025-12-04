@@ -1,9 +1,15 @@
 ################################################################################
-# UFP/mortality project
-
-
-# Packages
-
+# Code for the analysis in:
+# 
+#   Mortality risks associated with short-term exposure to ultrafine particles 
+#   in London and the West Midlands
+# 
+#   Nenon D, Fuller G, Masselot P, Gasparrini, A.
+#   Environmental Epidemiology - 2025
+#
+#
+# Import packages
+#
 ################################################################################
 
 # Data prep/cleaning 
