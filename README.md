@@ -4,7 +4,7 @@
 
 An example of the analysis published in this article that assesses the association between ultrafine air pollution and mortality:
 
-Nenon D, Fuller G, Masselot P, Gasparrini, A. Mortality risks associated with short-term exposure to ultrafine particles in London and the West Midlands. *Environmental Epidemiology*. 2025. DOI: 10.1097/EE9.0000000000000449.
+Nenon D, Fuller G, Masselot P, Gasparrini, A. Mortality risks associated with short-term exposure to ultrafine particles in London and the West Midlands. *Environmental Epidemiology*. 2025. DOI:
 
 ------------------------------------------------------------------------
 
