@@ -10,7 +10,7 @@ Nenon D, Fuller G, Masselot P, Gasparrini, A. Mortality risks associated with sh
 
 The material:
 
--   *UFPdata* stores the original and cleaned UFP data from the Defra measurement sites in London and the West Midlands in the period 2000--2019
--   The numbered files from *00_packages.R* to *08_plots.R* repproduce the steps of the analysis and display the results. Please note that the mortality data has not yet been added to this repository, so the code is not yet reproducible.
+-   *UFPdata* stores the original and cleaned UFP data from the Defra measurement sites in London and the West Midlands in the period 2000-2019
+-   The numbered files from *00_packages.R* to *08_plots.R* reproduce the steps of the analysis and display the results. Please note that the mortality data has not yet been added to this repository, so the code is not yet reproducible.
 
 Download as a ZIP file using the green button *Clone or download* above
