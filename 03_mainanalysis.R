@@ -1,9 +1,15 @@
 ################################################################################
-# UFP/mortality project
-
-
+# Code for the analysis in:
+# 
+#   Mortality risks associated with short-term exposure to ultrafine particles 
+#   in London and the West Midlands
+# 
+#   Nenon D, Fuller G, Masselot P, Gasparrini, A.
+#   Environmental Epidemiology - 2025
+#
+#
 # Main analysis
-
+#
 ################################################################################
 
 # Loop through the measurement sites
@@ -29,7 +35,7 @@ mainlist <- lapply(names(dlist), function(location){
     mortality <- data[[outcome]]
 
     # Run main model
-    modmain <- glm(mortality ~ ufp01 + spltime + dow + holiday + cbtemp , 
+    modmain <- glm(mortality ~ ufp01 + spltime + dow + holiday + cbtemp + pm2501, 
                    data, family=quasipoisson)
     
     # Extract RR and 95% CI for X unit increase (defined in params)

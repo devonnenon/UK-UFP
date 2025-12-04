@@ -1,9 +1,17 @@
 ################################################################################
-# UFP/mortality project
-
-
+# Code for the analysis in:
+# 
+#   Mortality risks associated with short-term exposure to ultrafine particles 
+#   in London and the West Midlands
+# 
+#   Nenon D, Fuller G, Masselot P, Gasparrini, A.
+#   Environmental Epidemiology - 2025
+#
+#
 # Importing and cleaning UFP data
-
+#
+################################################################################
+#
 # Instructions for downloading publicly available data:
 #-	Data downloaded yearly from 2000-2011, then grouped 2012-2015 and 2016-2019 
 #  (2000-2009 is available yearly, 2010-2019 can be downloaded in groups. 
@@ -50,15 +58,15 @@ files <- c(
 ufp_list <- lapply(files, function(file){
   # if file is xls, else if file is cvs (extracts the end of file name after .)
   if(sub('.*\\.', '', file) == "xls") {
-    colheadings <- read_excel(paste0("UFPdata/",file), sheet = "Data", n_max = 1)
+    colheadings <- read_excel(paste0("UFPdata/original/",file), sheet = "Data", n_max = 1)
     coltypes <- c("date", rep("numeric", length(colheadings)-1))
-    df <- read_excel(paste0("UFPdata/", file), sheet = "Data", .name_repair = "universal", 
+    df <- read_excel(paste0("UFPdata/original/", file), sheet = "Data", .name_repair = "universal", 
                      col_types = coltypes)
   } else {
     # extract column names from row 4
-    colnames <- read.csv(paste0("UFPdata/", file), skip = 3, nrows = 1, header = T)
+    colnames <- read.csv(paste0("UFPdata/original/", file), skip = 3, nrows = 1, header = T)
     # get data, starting at row 11 to ignore heading rows
-    df <- fread(paste0("UFPdata/", file), skip = 11, header = F)
+    df <- fread(paste0("UFPdata/original/", file), skip = 11, header = F)
     # add column names to the data
     names(df) <- names(colnames)
     return(df)

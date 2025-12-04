@@ -1,9 +1,15 @@
 ################################################################################
-# UFP/mortality project
-
-
-# Import and combine UFP/mortality/covariates data
-
+# Code for the analysis in:
+# 
+#   Mortality risks associated with short-term exposure to ultrafine particles 
+#   in London and the West Midlands
+# 
+#   Nenon D, Fuller G, Masselot P, Gasparrini, A.
+#   Environmental Epidemiology - 2025
+#
+#
+# Load, link, and prep dataset
+#
 ################################################################################
 
 #---------------

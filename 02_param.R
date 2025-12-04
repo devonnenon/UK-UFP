@@ -1,10 +1,17 @@
 ################################################################################
-# UFP/mortality project
-
-
-# Define parameters
-
+# Code for the analysis in:
+# 
+#   Mortality risks associated with short-term exposure to ultrafine particles 
+#   in London and the West Midlands
+# 
+#   Nenon D, Fuller G, Masselot P, Gasparrini, A.
+#   Environmental Epidemiology - 2025
+#
+#
+# Create necessary parameters
+#
 ################################################################################
+
 # MAIN ANALYSIS
 
 # Spline of time
@@ -50,3 +57,4 @@ QAIC <- function(model) {
   loglik <- sum(dpois(model$y, model$fitted.values, log=TRUE))
   return(-2*loglik + 2*summary(model)$df[3]*phi)
 }
+

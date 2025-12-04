@@ -1,9 +1,15 @@
 ################################################################################
-# UFP/mortality project
-
-
-# Secondary analyses: extended lag, nonlinear E-R, interrupted TS
-
+# Code for the analysis in:
+# 
+#   Mortality risks associated with short-term exposure to ultrafine particles 
+#   in London and the West Midlands
+# 
+#   Nenon D, Fuller G, Masselot P, Gasparrini, A.
+#   Environmental Epidemiology - 2025
+#
+#
+# Secondary analysis: extended lag
+#
 ################################################################################
 
 # Initialize empty lists
