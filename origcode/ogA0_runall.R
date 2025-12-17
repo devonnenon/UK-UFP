@@ -1,5 +1,5 @@
 ################################################################################
-# Reproducible code for the analysis of non-accidental mortality in:
+# Code for the analysis in:
 # 
 #   Mortality risks associated with short-term exposure to ultrafine particles 
 #   in London and the West Midlands
@@ -12,7 +12,7 @@
 #
 ################################################################################
 
-# Source all analysis scripts
+# Source all scripts
 source('00_packages.R')
 source('01_dataprep.R')
 source('02_param.R')

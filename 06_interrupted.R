@@ -1,5 +1,5 @@
 ################################################################################
-# Code for the analysis in:
+# Reproducible code for the analysis of non-accidental mortality in:
 # 
 #   Mortality risks associated with short-term exposure to ultrafine particles 
 #   in London and the West Midlands
@@ -15,12 +15,14 @@
 # Initialize empty list
 intlist <- list()
 
-# Loop on the different locations
+# Loop on the different locations - only kensington and birmcen
 for(location in names(dlist[names(dlist) != "birmtyb"])){
   print(location)
+  
+  # Extract location data
   data <- dlist[[location]]
   
-  # Redefine parameters from main model
+  # Redefine parameters from main model:
   # Define spline of time
   spltime_param <- list(data$date, df=round(dfspltime*nrow(data)/365.25))
   spltime <- do.call(spltimefun, spltime_param)
@@ -31,43 +33,34 @@ for(location in names(dlist[names(dlist) != "birmtyb"])){
   cbtemp <- crossbasis(data$tmean, lag=lagtmean, argvar=argvartmean,
                        arglag=arglagtmean)
   
-  # Define indicator for 2008 change point (new)
+  # Define indicator for 2008 change point in the data
   data$post2008 <- year(data$date) >= 2008
   
-  outcomes <- c("nonext", "cvd", "resp")
-  outcomemodels <- lapply(outcomes, function(outcome) {
-    #outcome <- "nonext"
-    # Pull previous model for this location and outcome
-    modmain <- mainlist[[location]][[outcome]][["modmain"]]
-    
-    # Pull temperature crossbasis from previous model
-    cbtemp <- mainlist[[location]][[outcome]][["cbtemp"]]
-    
-    # Rerun model with interaction with change point indicator
-    modpost <- update(modmain, . ~ . - ufp01 + ufp01:post2008)
-    
-    # Extract RR and 95% CI for X unit increase (defined in params)
-    est <- ci.exp(modpost, subset="ufp01", ctr.mat=diag(10000,2))
-    colnames(est) <- c("est", "lower", "upper")
-    
-    # Convert estimates into % change
-    percchange <- (est - 1)*100
-    
-    # Test of a difference for interaction
-    anova <- anova(modmain, modpost, test="Chisq")
-    anovap <- anova$`Pr(>Chi)`[2]
-    
-    # Store results
-    interrupted <- list(
-      modpost = modpost,
-      estRR = est,
-      estperc = percchange,
-      p_diff = anova
-    )
-    
-    return(interrupted)
-  })
-  names(outcomemodels) <- outcomes
-  intlist[[location]] <- outcomemodels
+  # Pull previous model for this location
+  modmain <- mainlist[[location]][["modmain"]]
+  
+  # Pull temperature crossbasis from previous model
+  cbtemp <- mainlist[[location]][["cbtemp"]]
+  
+  # Rerun model with interaction with change point indicator
+  modpost <- update(modmain, . ~ . - ufp01 + ufp01:post2008)
+  
+  # Extract RR and 95% CI for X unit increase (as defined in params)
+  est <- ci.exp(modpost, subset="ufp01", ctr.mat=diag(10000,2))
+  colnames(est) <- c("est", "lower", "upper")
+  
+  # Test of a difference for interaction
+  anova <- anova(modmain, modpost, test="Chisq")
+  anovap <- anova$`Pr(>Chi)`[2]
+  
+  # Store results
+  intlist[[location]] <- list(
+    modpost = modpost,
+    estRR = est,
+    p_diff = anova
+  )
 }
 
+# Remove unneeded objects
+rm(anova, anovap, argvartmean, cbtemp, data, est, ktemp, location, modmain, 
+   modpost, spltime, spltime_param)

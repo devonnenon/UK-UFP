@@ -1,5 +1,5 @@
 ################################################################################
-# Code for the analysis in:
+# Reproducible code for the analysis of non-accidental mortality in:
 # 
 #   Mortality risks associated with short-term exposure to ultrafine particles 
 #   in London and the West Midlands
@@ -27,69 +27,51 @@ mainlist <- lapply(names(dlist), function(location){
   argvartmean <- list(fun="bs", knots=ktemp, degree=2)
   cbtemp <- crossbasis(data$tmean, lag=lagtmean, argvar=argvartmean,
                         arglag=arglagtmean)
-  
-  # Loop on the outcomes
-  causes_results <- lapply(outcomes, function(outcome){
-    
-    # Extract mortality data for the outcome
-    mortality <- data[[outcome]]
 
-    # Run main model
-    modmain <- glm(mortality ~ ufp01 + spltime + dow + holiday + cbtemp + pm2501, 
-                   data, family=quasipoisson)
-    
-    # Extract RR and 95% CI for X unit increase (defined in params)
-    est <- ci.exp(modmain, subset="ufp01", ctr.mat=matrix(unitinc))
-    colnames(est) <- c("est", "lower", "upper")
-    
-    # Convert estimates into % change
-    percchange <- (est - 1)*100
-    
-    # Store results in list
-    result <- list(
-      modmain = modmain,
-      estRR = est,
-      estperc = percchange,
-      outcome = outcome,
-      cbtemp = cbtemp
-    )
-    return(result)
-  })
-  names(causes_results) <- outcomes
-  return(causes_results)
+  # RUN MAIN MODEL
+  modmain <- glm(nonext ~ ufp01 + spltime + dow + holiday + cbtemp + pm2501, 
+                 data, family=quasipoisson)
+  
+  # Extract RR and 95% CI for X unit increase (as defined in params)
+  est <- ci.exp(modmain, subset="ufp01", ctr.mat=matrix(unitinc))
+  colnames(est) <- c("est", "lower", "upper")
+  
+  # Store results in list
+  result <- list(
+    modmain = modmain,
+    estRR = est,
+    cbtemp = cbtemp
+  )
+  
+  return(result)
 }) ; names(mainlist) <- names(dlist)
 
 # -------------
 # Pool West Midlands sites
 # -------------
 
-mainlist[["wmid_pool"]] <- lapply(outcomes, function(outcome){
-  
-  # Extract coefficients and variances from west midlands models 
-  coefs <- unlist(lapply(birmsites, function(site) 
-    mainlist[[site]][[outcome]][["modmain"]][["coefficients"]][["ufp01"]]))
-  
-  variances <- unlist(lapply(birmsites, function(site) 
-    vcov(mainlist[[site]][[outcome]][["modmain"]])["ufp01","ufp01"]))
-  
-  # Standard meta analysis with fixed effects
-  meta <- mixmeta(coefs ~ 1, variances, method = "fixed")
-  
-  # Predict change for 10,000 unit increase of UFP
-  est <- as.data.frame(t(exp(predict(meta, ci = T)[1,]*10000)))
-  colnames(est) <- c("est", "lower", "upper")
+# Store site names for West Midlands
+birmsites <- c("birmcen", "birmtyb")
 
-  # Calculate as % change
-  perc <- (est - 1)*100
-  
-  results <- list(
-    modmain = meta,
-    estRR = est,
-    estperc = perc,
-    outcome = outcome
-  )
-  return(results)
-}) ; names(mainlist[["wmid_pool"]]) <- outcomes
+# Extract coefficients and variances from west midlands models 
+coefs <- unlist(lapply(birmsites, function(site) 
+  mainlist[[site]][["modmain"]][["coefficients"]][["ufp01"]]))
 
+variances <- unlist(lapply(birmsites, function(site) 
+  vcov(mainlist[[site]][["modmain"]])["ufp01","ufp01"]))
 
+# Standard meta analysis with fixed effects
+meta <- mixmeta(coefs ~ 1, variances, method = "fixed")
 
+# Predict change for 10,000 unit increase of UFP
+est <- as.data.frame(t(exp(predict(meta, ci = T)[1,]*10000)))
+colnames(est) <- c("est", "lower", "upper")
+
+# Store results 
+mainlist[["wmid_pool"]] <- list(
+  modmain = meta,
+  estRR = est
+)
+
+# Remove intermediate objects
+rm(coefs, variances, meta, est)

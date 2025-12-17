@@ -1,5 +1,5 @@
 ################################################################################
-# Reproducible code for the analysis of non-accidental mortality in:
+# Code for the analysis in:
 # 
 #   Mortality risks associated with short-term exposure to ultrafine particles 
 #   in London and the West Midlands
@@ -14,41 +14,38 @@
 
 # MAIN ANALYSIS
 
-# Spline of time - df/year and type of spline
+# Spline of time
 dfspltime <- 7 # per year
 spltimefun <- "ns"
 
 # Define the unit increase for calculating effect estimates
 unitinc <- 10000
 
+# Store the sites and outcomes in vectors for consistency
+outcomes <- c("nonext")#, "cvd", "resp")
+birmsites <- c("birmcen", "birmtyb")
+
 # Define param of temp function
 arglagtmean <- list(fun="strata", breaks = 1) # passed to crossbasis for temp
 lagtmean <- 3 # number of lagged days for temp crossbasis
-
 
 # SECONDARY ANALYSIS 
 
 # Choose length of extended lag
 lagufp <- 5 
-
 # Define parameters for ufp crossbasis
-argvarufp <- list(fun = "lin") # linear ERF 
-arglagufp <- list(fun = "integer") # integer for lag 
+argvarufp <- list(fun = "lin")
+arglagufp <- list(fun = "integer")
 
-# Define spline for UFP for nonlinear E-R:
-# Get vector of UFP data to define shared knots
-ufprange <- do.call(c, lapply(dlist, function(sitedata) sitedata$ufp))
-# Define knot at 50%
-kufp <- quantile(ufprange, 0.5, na.rm=T) # 1 knot at 50%
-# Define boundary knots at range, excluding one outlier value 
-bdkufp <- c(min(ufprange, na.rm=T), max(ufprange[ufprange != max(ufprange, na.rm=T)], na.rm=T))
-# Define type of spline
+# Define spline for UFP for nonlinear E-R
+kufp <- quantile(ufpdf$ufp, 0.5, na.rm=T) # 1 knot at 50%
+bdkufp <- c(min(ufpdf$ufp, na.rm=T), max(ufpdf$ufp[ufpdf$ufp != max(ufpdf$ufp, na.rm=T)], na.rm=T))
+  #sapply(dlist, function(x) range(x$ufp, na.rm = T)) |> range() 
+      #boundary knots at ends of UFP range, excluding the outlier in birmcen
 splufpfun <- "ns"
+splufp_param <- list(knots = kufp, Boundary.knots = bdkufp) # If using bs, add degree = 
 
-# Save spline parameters in list 
-splufp_param <- list(knots = kufp, Boundary.knots = bdkufp) 
-
-# Define range for nonlinear predictions
+# Define range for nonlinear predictions (to ignore outliers)
 maxpred <- max(bdkufp) # upper limit for range of predictions
 preds <- seq(0, maxpred, length = 50)
 
@@ -61,5 +58,3 @@ QAIC <- function(model) {
   return(-2*loglik + 2*summary(model)$df[3]*phi)
 }
 
-# Remove unneeded objects
-rm(ufprange)

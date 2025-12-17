@@ -1,5 +1,5 @@
 ################################################################################
-# Reproducible code for the analysis of non-accidental mortality in:
+# Code for the analysis in:
 # 
 #   Mortality risks associated with short-term exposure to ultrafine particles 
 #   in London and the West Midlands
@@ -92,7 +92,7 @@ ufp_list[["ufp05"]][5:nrow(ufp_list[["ufp05"]])-1,]$Date.Time <- # Only some row
 ufp_list[["ufp04"]] <- ufp_list[["ufp04"]] %>%
   filter(row_number() <= n()-1)
 
-# Create vector of site location names
+# Create vector of site location names and associated strings
 sites <- c("belfast", "birmingham", "glasgow", "bloomsbury", "manchester", "kensington",
            "talbot", "marylebone", "harwell", "honor", "chilbolton")
 
@@ -122,17 +122,43 @@ ufp <- do.call(rbind, lapply(ufp_list, function(df){
 ufp <- ufp %>%
   mutate(across(where(is.numeric), ~ ifelse(.x < 1, NA, .x)))
 
+#df[,-1] <- lapply(df[,-1], function(x) ifelse(x < 1, NA, x))
+
+# ufp <- ufp %>%
+#   mutate(london = ifelse(london < 1, NA, london)) %>%
+#   mutate(wmid = ifelse(wmid < 1, NA, wmid))
+
+# Remove 2003-08-18 and 2003-08-17 due to indication of error (extreme high values before period of missings)
+#ufp$wmid[ufp$date == as.Date("2003-08-18") | ufp$date == as.Date("2003-08-17") ] <- NA
+
+# For sensitivity analysis: trim top and bottom 5% 
+#ufp <- ufp %>%
+#  mutate(london = ifelse(london <= quantile(london, 0.05, na.rm=T), NA, london)) %>%
+#  mutate(wmid = ifelse(wmid <= quantile(wmid, 0.05, na.rm=T), NA, wmid)) %>%
+#  mutate(london = ifelse(london >= quantile(london, 0.95, na.rm=T), NA, london)) %>%
+#  mutate(wmid = ifelse(wmid >= quantile(wmid, 0.95, na.rm=T), NA, wmid))
+
 # Aggregate to daily, requiring 75% of complete measurements per day
 ufp_agg <- timeAverage(ufp, avg.time = "day", data.thresh = 75)
 
 # Change date back to date format 
 ufp_agg$date <- as.Date(ufp_agg$date)
 
-# Change all of 2017 to NA (Reported issues with the equipment, strangely low values)
+# Change all of 2017 to NA (Repoerted issues with the equipment, strangely low values)
 ufp_agg <- ufp_agg %>%
   mutate(kensington = ifelse(year(date) == 2017, NA, kensington)) 
 
 # # Pivot to longer format and add site column
+# ufp_agg_long <- ufp_agg %>%
+#   pivot_longer(cols = c(london, wmid), cols_vary = "slowest", 
+#                names_to = "area", values_to = "ufp") %>%
+#   # add site column to indicate the site change in birmingham 
+#   mutate(site = ifelse(area == "wmid" & date < as.Date("2009-01-12"), "birmcen", "birmtyb")) %>%
+#   # add site column for london data
+#   mutate(site = ifelse(area == "london", "nkens", site)) %>%
+#   # reorder columns
+#   select(date, area, site, ufp)
+
 ufp_agg_long <- ufp_agg %>%
   pivot_longer(cols = sites, cols_vary = "slowest", 
                names_to = "site", values_to = "ufp")
